@@ -40,8 +40,8 @@ export const CityForecastInfo = () => {
                     return (
                         <Container className="forecast-container">
                             <Row>
-                                <Col>
-                                    <div>
+                                <Col style={{alignContent: 'center'}}>
+                                    <div style={{textAlign: 'center'}}>
                                         <h1>{city.name}, {city.sys.country}</h1>
                                         <p>Temperature: {city.main.temp}°C (Feels like: {city.main.feels_like}°C)</p>
                                         <p>Humidity: {city.main.humidity}% | Pressure: {city.main.pressure} hPa</p>
@@ -65,7 +65,7 @@ export const CityForecastInfo = () => {
                                     </div>
                                 </Col>
                             </Row>
-                            <Button className="btn-color" onClick={handleBack}>Back</Button>
+                            <Button className="btn-color mt-3" onClick={handleBack}>Back</Button>
                         </Container>
                     );
                 })()
