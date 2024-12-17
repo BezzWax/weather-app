@@ -16,6 +16,7 @@ export const CityAdd = () => {
     if (newCity) {
       dispatch(addCity(newCity));
       setNewCity("");
+      window.location.reload();
     }
   };
 

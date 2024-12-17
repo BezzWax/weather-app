@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { WeatherData } from "../types/WeatherDataTypes";
-import { Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { Loader } from "../components/Loader";
 import { Chart } from "../components/Chart";
 
@@ -10,6 +10,7 @@ export const CityForecastInfo = () => {
     const [city, setCity] = useState<WeatherData | null>(null);
     const { pathname } = useLocation();
     const cityName = pathname.split('/')[1];
+    const navigate = useNavigate();
 
     const fetchWeatherDataForCity = async (cityName: string) => {
         try {
@@ -28,48 +29,44 @@ export const CityForecastInfo = () => {
         }
     }, [cityName]);
 
-
+    const handleBack = () => {
+        navigate(-1);
+    }
 
     return (
         <div className="all-height">
             {city ? (
                 (() => {
                     return (
-                        <Row>
-                            <Col>
-                                <Container className="text-center">
-                                    <h1>{city.name}, {city.sys.country}</h1>
-                                    <p>Temperature: {city.main.temp}°C (Feels like: {city.main.feels_like}°C)</p>
-                                    <p>Humidity: {city.main.humidity}% | Pressure: {city.main.pressure} hPa</p>
-                                    <p>Wind: {city.wind.speed} m/s, {city.wind.deg}°</p>
-                                    <p>Cloudiness: {city.clouds.all}%</p>
-    
+                        <Container className="forecast-container">
+                            <Row>
+                                <Col>
+                                    <div>
+                                        <h1>{city.name}, {city.sys.country}</h1>
+                                        <p>Temperature: {city.main.temp}°C (Feels like: {city.main.feels_like}°C)</p>
+                                        <p>Humidity: {city.main.humidity}% | Pressure: {city.main.pressure} hPa</p>
+                                    </div>
+                                    
                                     <div className="weather-badge-container">
                                         <div className="weather-badge">
                                             <img
-                                                width={50}
-                                                height={50}
                                                 className="weather-icon"
                                                 src={`https://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`}
                                                 alt={city.weather[0].description}
                                             />
                                             <label>{city.weather[0].description}</label>
                                         </div>
-                                        
                                     </div>
-    
-                                    <p>Sunrise: {new Date(city.sys.sunrise * 1000).toLocaleTimeString()}</p>
-                                    <p>Sunset: {new Date(city.sys.sunset * 1000).toLocaleTimeString()}</p>
-                                </Container>
-                            </Col>
-    
-                            <Col className="text-center">
-                                <h3>Weather Details</h3>
-                                <p>Coordinates: Latitude {city.coord.lat}, Longitude {city.coord.lon}</p>
-
-                                <Chart lat={city.coord.lat} lon={city.coord.lon} name={city.name} />
-                            </Col>
-                        </Row>
+                                </Col>
+                                <Col>
+                                    <div className="chart-container">
+                                        <h3>Forecast Chart</h3>
+                                        <Chart lat={city.coord.lat} lon={city.coord.lon} name={city.name} />
+                                    </div>
+                                </Col>
+                            </Row>
+                            <Button className="btn-color" onClick={handleBack}>Back</Button>
+                        </Container>
                     );
                 })()
             ) : (

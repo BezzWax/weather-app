@@ -48,7 +48,7 @@ export const Chart: React.FC<ChartType> = ({ lat, lon, name }) => {
 
   return (
     <div>
-      <h2>5-day chart in {name}</h2>
+      <h2>5-day tempreature chart in {name}</h2>
       {loading ? (
         <Loader />
       ) : chartData ? (

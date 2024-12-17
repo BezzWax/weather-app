@@ -66,9 +66,6 @@ export const CityCards = () => {
         dispatch(deleteCity(city));
         fetchWeatherData();
     };
-
-
-    
     
 
     return (
@@ -93,7 +90,7 @@ export const CityCards = () => {
                                 <Row>
                                     <Col>
                                         <Button
-                                            className='my-1'
+                                            className='my-1 btn-upd'
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleClick(city);
