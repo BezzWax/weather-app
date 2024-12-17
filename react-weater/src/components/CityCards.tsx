@@ -2,118 +2,111 @@ import { useEffect, useState } from 'react';
 import '../assets/styles/CityCard.scss'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Container, Row, Stack } from 'react-bootstrap';
 import { Loader } from './Loader';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { deleteCity } from '../hooks/cityStore/cityActions';
 
 export const CityCards = () => {
-    const [weatherData, setWeatherData] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [updatingCity, setUpdatingCity] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cities = useSelector((state: any) => state.city.cityForecast);
 
-    const fetchWeatherDataForCity = async (city: string) => {
-        try {
-            const response = await axios.get(
-                `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY || "2ca6774e04c3e69ed3c5702f52b3da53"}&units=metric`
-            );
-            setWeatherData(prevData =>
-                prevData.map(data =>
-                    data.city === city ? { ...data, weather: response.data } : data
-                )
-            );
-        } catch (error) {
-            console.error("Error fetching weather data: ", error);
-        }
-    };
+  const fetchWeatherData = async () => {
+    setLoading(true);
 
-    const fetchWeatherData = async () => {
-        const savedCities = localStorage.getItem("cityForecast");
-        const formattedCities = savedCities ? JSON.parse(savedCities) : [];
+    try {
+      const cityWeatherPromises = cities.map(async ({ city }: { city: string }) => {
+        const response = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY || "2ca6774e04c3e69ed3c5702f52b3da53"}&units=metric`
+        );
+        return { city, weather: response.data };
+      });
+      const weatherData = await Promise.all(cityWeatherPromises);
+      setWeatherData(weatherData);
+    } catch (error) {
+      console.error("Error fetching weather data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (formattedCities.length === 0) {
-            setLoading(false);
-            return;
-        }
+  const updateCityWeather = async (city: string) => {
+    setUpdatingCity(city);
+    try {
+      const response = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY || "2ca6774e04c3e69ed3c5702f52b3da53"}&units=metric`
+      );
+      setWeatherData((prevData) =>
+        prevData.map((item) =>
+          item.city === city ? { city, weather: response.data } : item
+        )
+      );
+    } catch (error) {
+      console.error(`Error updating weather for ${city}: `, error);
+    } finally {
+      setUpdatingCity(null);
+    }
+  };
 
-        try {
-            const cityWeatherPromises = formattedCities.map(async ({ city }: { city: string }) => {
-                const response = await axios.get(
-                    `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY || "2ca6774e04c3e69ed3c5702f52b3da53"}&units=metric`
-                );
-                return { city, weather: response.data };
-            });
-            const weatherData = await Promise.all(cityWeatherPromises);
-            setWeatherData(weatherData);
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching weather data: ", error);
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    fetchWeatherData();
+  }, [cities]);
 
-    useEffect(() => {
-        fetchWeatherData();
-    }, []);
+  const handleDeleteCity = (city: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(deleteCity(city));
+  };
 
-    const handleClick = (city: string) => {
-        fetchWeatherDataForCity(city);
-    };
+  return (
+    <Container>
+      <Row>
+        {loading ? (
+          <Loader />
+        ) : (
+          weatherData.map(({ city, weather }) => (
+            <Col lg={3} md={4} key={city}>
+              <div className="city-card" onClick={() => navigate(`/${city.toLowerCase()}`)}>
+                <div className="card-title">{city}</div>
+                <div className="card-text">
+                  {weather?.main?.temp}°C - {weather?.weather[0]?.description}
+                </div>
+                <img
+                  className="weather-icon"
+                  src={`https://openweathermap.org/img/wn/${weather?.weather[0]?.icon}.png`}
+                  alt={weather?.weather[0]?.description}
+                />
 
-    const handleDeleteCity = (city: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        dispatch(deleteCity(city));
-        fetchWeatherData();
-    };
-    
+                <Stack direction='horizontal' className='justify-content-around'>
+                    <Button
+                        className='btn-color'
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            updateCityWeather(city);
+                        }}
+                        disabled={updatingCity === city}
+                    >
+                        Update
+                  </Button>
 
-    return (
-        <Container>
-            <Row>
-                {loading ? (
-                    <Loader />
-                ) : (
-                    weatherData.map(({ city, weather }) => (
-                        <Col lg={3} md={4} key={city}>
-                            <div className="city-card" onClick={() => navigate(`/${city.toLowerCase()}`)}>
-                                <div className="card-title">{city}</div>
-                                <div className="card-text">
-                                    {weather?.main?.temp}°C - {weather?.weather[0]?.description}
-                                </div>
-                                <img
-                                    className="weather-icon"
-                                    src={`https://openweathermap.org/img/wn/${weather?.weather[0]?.icon}.png`}
-                                    alt={weather?.weather[0]?.description}
-                                />
+                    <Button
+                    className='my-1'
+                    variant="danger"
+                    onClick={(e) => handleDeleteCity(city, e)}
+                    >
+                    Delete
+                    </Button>
+                </Stack>
 
-                                <Row>
-                                    <Col>
-                                        <Button
-                                            className='my-1 btn-upd'
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleClick(city);
-                                            }}
-                                        >
-                                            Update
-                                        </Button>
-                                    </Col>
-                                    <Col>
-                                    <Button 
-                                        className='my-1'
-                                        variant="danger"
-                                        onClick={(e) => handleDeleteCity(city, e)}
-                                    >
-                                        Delete
-                                    </Button>
-                                    </Col>
-                                </Row>
-                            </div>
-                        </Col>
-                    ))
-                )}
-            </Row>
-        </Container>
-    );
+                
+              </div>
+            </Col>
+          ))
+        )}
+      </Row>
+    </Container>
+  );
 };

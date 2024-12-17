@@ -4,6 +4,7 @@ const initialState: CityState = {
   cityForecast: JSON.parse(localStorage.getItem("cityForecast") || "[]"),
 };
 
+
 export const cityReduser = (
   state = initialState,
   action: { type: string; payload?: string }
@@ -18,9 +19,8 @@ export const cityReduser = (
       };
 
     case "DELETE":
-      if (!action.payload) {
-        return state;
-      }
+      if (!action.payload) return state;
+
       const filteredCities = state.cityForecast.filter(
         (city) => city.city !== action.payload
       );
@@ -34,3 +34,4 @@ export const cityReduser = (
       return state;
   }
 };
+
