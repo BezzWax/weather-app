@@ -66,6 +66,9 @@ export const CityCards = () => {
         dispatch(deleteCity(city));
         fetchWeatherData();
     };
+
+
+    
     
 
     return (
