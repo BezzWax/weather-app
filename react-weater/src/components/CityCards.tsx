@@ -93,6 +93,7 @@ export const CityCards = () => {
                                 <Row>
                                     <Col>
                                         <Button
+                                            className='my-1'
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleClick(city);
@@ -103,6 +104,7 @@ export const CityCards = () => {
                                     </Col>
                                     <Col>
                                     <Button 
+                                        className='my-1'
                                         variant="danger"
                                         onClick={(e) => handleDeleteCity(city, e)}
                                     >
