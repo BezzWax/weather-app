@@ -44,7 +44,8 @@ export const CityAdd = () => {
           />
           <Button 
             className="btn-color" 
-            onClick={handleAddCity}>
+            onClick={handleAddCity}
+          >
               Add
             </Button>
         </Stack>
